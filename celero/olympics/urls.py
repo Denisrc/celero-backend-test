@@ -3,3 +3,4 @@ from olympics import views
 
 router = routers.DefaultRouter()
 router.register(r'sports', views.SportViewset)
+router.register(r'events', views.EventViewset)
