@@ -12,12 +12,15 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "sport"]
 
 class OlympicSerializer(serializers.ModelSerializer):
-
+    games = serializers.SerializerMethodField()
     season = serializers.ChoiceField(choices = {
         "Summer": "S",
         "Winter": "W"
     })
 
+    def get_games(self, obj):
+        return str(obj.year) + ' ' + obj.season
+
     class Meta:
         model = Olympic
-        fields = ["id", "year", "season", "city"]
+        fields = ["id", "year", "season", "city", "games"]

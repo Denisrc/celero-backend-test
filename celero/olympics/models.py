@@ -20,3 +20,4 @@ class Olympic(models.Model):
     )
     season = models.CharField(blank=False, max_length=1, choices=SEASONS, null=False)
     city = models.CharField(blank=False, max_length=100, null=False)
+    
