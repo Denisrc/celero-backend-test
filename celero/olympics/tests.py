@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
-from olympics.models import Sport, Event
+from olympics.models import Sport, Event, Olympic
 
 class SportTestCase(APITestCase):
     
@@ -309,3 +309,143 @@ class EventTestCase(APITestCase):
         self.assertEquals(events[0].id, 2)
         self.assertEquals(events[0].sport.name, "Sport 2")
         
+class OlympicTestCase(APITestCase):
+    
+    def setUp(self):
+        olympic = Olympic.objects.create(year = 2020, season = 'S', city = "City A")
+        olympic.save()
+
+        olympic_2 = Olympic.objects.create(year = 2020, season = 'W', city = "City B")
+        olympic_2.save()
+
+        self.base_body = {
+            "year": 2030,
+            "season": "Summer",
+            "city": "City C"
+        }
+
+    # Test get all elements in list
+    def test_olympics_list_all(self):
+        response = self.client.get("/api/olympics/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        olympic = response_data[0]
+        olympic_2 = response_data[1]
+
+        self.assertEquals(olympic["id"], 1)
+        self.assertEquals(olympic["year"], 2020)
+        self.assertEquals(olympic["season"], "S")
+        self.assertEquals(olympic["city"], "City A")
+
+        self.assertEquals(olympic_2["id"], 2)
+        self.assertEquals(olympic_2["year"], 2020)
+        self.assertEquals(olympic_2["season"], "W")
+        self.assertEquals(olympic_2["city"], "City B")
+
+    # Test get a empty list
+    def test_sports_list_empty(self):
+        Olympic.objects.all().delete()
+        response = self.client.get("/api/olympics/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 0)
+
+    # Test fetching a olympic by id
+    def test_olympics_get_by_id(self):
+        # Get sport with id 2
+        response = self.client.get("/api/olympics/1/")
+        response_data = response.data
+        
+        olympic = response_data
+
+        self.assertEquals(olympic["id"], 1)
+        self.assertEquals(olympic["year"], 2020)
+        self.assertEquals(olympic["season"], "S")
+        self.assertEquals(olympic["city"], "City A")
+
+        # Get sport with id 2
+        response = self.client.get("/api/olympics/2/")
+        response_data = response.data
+
+        olympic_2 = response_data
+
+        self.assertEquals(olympic_2["id"], 2)
+        self.assertEquals(olympic_2["year"], 2020)
+        self.assertEquals(olympic_2["season"], "W")
+        self.assertEquals(olympic_2["city"], "City B")
+
+    # Test creating a new olympic
+    def test_create_new_olympic(self):
+        request = self.client.post("/api/olympics/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(request.data['id'], 3)
+
+        olympic = Olympic.objects.get(id=3)
+
+        self.assertEquals(olympic.year, 2030)
+        self.assertEquals(olympic.city, "City C")
+        self.assertEquals(olympic.season, "Summer")
+
+    # Test creating a new olympic with invalid season
+    def test_create_new_olympic_invalid_season(self):
+        base_body = self.base_body
+        base_body["season"] = "Autumn"
+        request = self.client.post("/api/olympics/", base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(request.data["season"][0], '"Autumn" is not a valid choice.')
+
+    # Test update a olympic using a PUT request
+    def test_update_olympic_put(self):
+        olympic = Olympic.objects.get(id=1)
+        self.assertEquals(olympic.year, 2020)
+        self.assertEquals(olympic.season, "S")
+        self.assertEquals(olympic.city, "City A")
+
+        request = self.client.put("/api/olympics/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        olympic = Olympic.objects.get(id=1)
+
+        self.assertEquals(olympic.year, 2030)
+        self.assertEquals(olympic.season, "Summer")
+        self.assertEquals(olympic.city, "City C")
+
+    # Test update a olympic using a PATCH request
+    def test_update_olympic_patch(self):
+        olympic = Olympic.objects.get(id=1)
+        self.assertEquals(olympic.year, 2020)
+        self.assertEquals(olympic.season, "S")
+        self.assertEquals(olympic.city, "City A")
+
+        request = self.client.put("/api/olympics/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        olympic = Olympic.objects.get(id=1)
+
+        self.assertEquals(olympic.year, 2030)
+        self.assertEquals(olympic.season, "Summer")
+        self.assertEquals(olympic.city, "City C")
+
+    # Test delete a olympic
+    def test_delete_olympic(self):
+        olympics = Olympic.objects.all()
+
+        self.assertEquals(len(olympics), 2)
+
+        request = self.client.delete("/api/olympics/1/")
+
+        self.assertEquals(request.status_code, status.HTTP_204_NO_CONTENT)
+
+        olympics = Olympic.objects.all()
+
+        self.assertEquals(len(olympics), 1)
+
+        self.assertEquals(olympics[0].year, 2020)
+        self.assertEquals(olympics[0].city, "City B")
+        self.assertEquals(olympics[0].id, 2)
