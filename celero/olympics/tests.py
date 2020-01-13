@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
-from olympics.models import Sport, Event, Olympic, Team
+from olympics.models import Sport, Event, Olympic, Team, Athlete
 
 class SportTestCase(APITestCase):
     
@@ -589,3 +589,179 @@ class TeamTestCase(APITestCase):
         self.assertEquals(teams[0].name, "Name 2")
         self.assertEquals(teams[0].noc, "DEF")
         self.assertEquals(teams[0].id, 2)
+
+class AthleteTestCase(APITestCase):
+    
+    def setUp(self):
+        team = Team.objects.create(noc = "ABC", name = "Name 1")
+        team.save()
+
+        team_2 = Team.objects.create(noc = "DEF", name = "Name 2")
+        team_2.save()
+
+        athlete = Athlete.objects.create(name="Athlete 1", age=20, height=70, weight=180, sex="M", team=team)
+        athlete.save()
+
+        athlete_2 = Athlete.objects.create(name="Athlete 2", age=25, height=68, weight=170, sex="F", team=team_2)
+        athlete_2.save()
+
+        self.base_body = {
+            "name": "Name",
+            "age": 30,
+            "height": 75,
+            "weight": 175,
+            "sex": "Male",
+            "team": 1
+        }
+
+    # Test get all elements in list
+    def test_athletes_list_all(self):
+        response = self.client.get("/api/athletes/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        athlete = response_data[0]
+        athlete_2 = response_data[1]
+
+        self.assertEquals(athlete["id"], 1)
+        self.assertEquals(athlete["name"], "Athlete 1")
+        self.assertEquals(athlete["age"], 20)
+        self.assertEquals(athlete["height"], 70)
+        self.assertEquals(athlete["weight"], 180)
+        self.assertEquals(athlete["sex"], "M")
+        self.assertEquals(athlete["team"], 1)
+
+        self.assertEquals(athlete_2["id"], 2)
+        self.assertEquals(athlete_2["name"], "Athlete 2")
+        self.assertEquals(athlete_2["age"], 25)
+        self.assertEquals(athlete_2["height"], 68)
+        self.assertEquals(athlete_2["weight"], 170)
+        self.assertEquals(athlete_2["sex"], "F")
+        self.assertEquals(athlete_2["team"], 2)
+
+    # Test get a empty list
+    def test_team_list_empty(self):
+        Athlete.objects.all().delete()
+        response = self.client.get("/api/athletes/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 0)
+
+    # Test fetching a team by id
+    def test_team_get_by_id(self):
+        # Get team with id 2
+        response = self.client.get("/api/athletes/1/")
+        response_data = response.data
+        
+        athlete = response_data
+
+        self.assertEquals(athlete["id"], 1)
+        self.assertEquals(athlete["name"], "Athlete 1")
+        self.assertEquals(athlete["age"], 20)
+        self.assertEquals(athlete["height"], 70)
+        self.assertEquals(athlete["weight"], 180)
+        self.assertEquals(athlete["sex"], "M")
+        self.assertEquals(athlete["team"], 1)
+
+        # Get team with id 2
+        response = self.client.get("/api/athletes/2/")
+        response_data = response.data
+
+        athlete_2 = response_data
+
+        self.assertEquals(athlete_2["id"], 2)
+        self.assertEquals(athlete_2["name"], "Athlete 2")
+        self.assertEquals(athlete_2["age"], 25)
+        self.assertEquals(athlete_2["height"], 68)
+        self.assertEquals(athlete_2["weight"], 170)
+        self.assertEquals(athlete_2["sex"], "F")
+        self.assertEquals(athlete_2["team"], 2)
+
+    # Test creating a new team
+    def test_create_new_team(self):
+        request = self.client.post("/api/athletes/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(request.data['id'], 3)
+
+        athlete = Athlete.objects.get(id=3)
+
+        self.assertEquals(athlete.name, "Name")
+        self.assertEquals(athlete.age, 30)
+        self.assertEquals(athlete.height, 75)
+        self.assertEquals(athlete.weight, 175)
+        self.assertEquals(athlete.sex, "Male")
+        self.assertEquals(athlete.team.id, 1)
+
+    # Test update a team using a PUT request
+    def test_update_team_put(self):
+        athlete = Athlete.objects.get(id=1)
+
+        self.assertEquals(athlete.id, 1)
+        self.assertEquals(athlete.name, "Athlete 1")
+        self.assertEquals(athlete.age, 20)
+        self.assertEquals(athlete.height, 70)
+        self.assertEquals(athlete.weight, 180)
+        self.assertEquals(athlete.sex, "M")
+        self.assertEquals(athlete.team.id, 1)
+
+        request = self.client.put("/api/athletes/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        athlete = Athlete.objects.get(id=1)
+
+        self.assertEquals(athlete.name, "Name")
+        self.assertEquals(athlete.age, 30)
+        self.assertEquals(athlete.height, 75)
+        self.assertEquals(athlete.weight, 175)
+        self.assertEquals(athlete.sex, "Male")
+        self.assertEquals(athlete.team.id, 1)
+
+    # Test update a team using a PATCH request
+    def test_update_team_patch(self):
+        athlete = Athlete.objects.get(id=1)
+
+        self.assertEquals(athlete.id, 1)
+        self.assertEquals(athlete.name, "Athlete 1")
+        self.assertEquals(athlete.age, 20)
+        self.assertEquals(athlete.height, 70)
+        self.assertEquals(athlete.weight, 180)
+        self.assertEquals(athlete.sex, "M")
+        self.assertEquals(athlete.team.id, 1)
+
+        request = self.client.put("/api/athletes/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        athlete = Athlete.objects.get(id=1)
+
+        self.assertEquals(athlete.name, "Name")
+        self.assertEquals(athlete.age, 30)
+        self.assertEquals(athlete.height, 75)
+        self.assertEquals(athlete.weight, 175)
+        self.assertEquals(athlete.sex, "Male")
+        self.assertEquals(athlete.team.id, 1)
+
+    # Test delete a team
+    def test_delete_olympic(self):
+        athletes = Athlete.objects.all()
+
+        self.assertEquals(len(athletes), 2)
+
+        request = self.client.delete("/api/athletes/1/")
+
+        self.assertEquals(request.status_code, status.HTTP_204_NO_CONTENT)
+
+        athletes = Athlete.objects.all()
+
+        self.assertEquals(len(athletes), 1)
+
+        self.assertEquals(athletes[0].id, 2)
+        self.assertEquals(athletes[0].name, "Athlete 2")
+        self.assertEquals(athletes[0].age, 25)
+        self.assertEquals(athletes[0].height, 68)
+        self.assertEquals(athletes[0].weight, 170)
+        self.assertEquals(athletes[0].sex, "F")
+        self.assertEquals(athletes[0].team.id, 2)
