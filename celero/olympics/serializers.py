@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from olympics.models import Sport, Event, Olympic
+from olympics.models import Sport, Event, Olympic, Team
 
 class SportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,3 +24,10 @@ class OlympicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Olympic
         fields = ["id", "year", "season", "city", "games"]
+
+class TeamSearializer(serializers.ModelSerializer):
+    noc = serializers.CharField(max_length=3, min_length=3)
+    
+    class Meta:
+        model = Team
+        fields = ["id", "noc", "name"]

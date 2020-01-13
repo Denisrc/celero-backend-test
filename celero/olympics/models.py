@@ -21,3 +21,6 @@ class Olympic(models.Model):
     season = models.CharField(blank=False, max_length=1, choices=SEASONS, null=False)
     city = models.CharField(blank=False, max_length=100, null=False)
     
+class Team(models.Model):
+    noc = models.CharField(blank=False, max_length=3, null=False, unique=True)
+    name = models.CharField(blank=False, max_length=100, null=False)
