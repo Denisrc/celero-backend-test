@@ -16,3 +16,7 @@ class EventViewset(viewsets.ModelViewSet):
 class OlympicViewset(viewsets.ModelViewSet):
     queryset = models.Olympic.objects.all()
     serializer_class = serializers.OlympicSerializer
+
+class TeamViewset(viewsets.ModelViewSet):
+    queryset = models.Team.objects.all()
+    serializer_class = serializers.TeamSearializer
