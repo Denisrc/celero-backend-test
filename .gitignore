@@ -1,3 +1,4 @@
 *.pyc
 *.csv
 *.lock
+db.sqlite3
