@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
-from olympics.models import Sport, Event, Olympic
+from olympics.models import Sport, Event, Olympic, Team
 
 class SportTestCase(APITestCase):
     
@@ -354,7 +354,7 @@ class OlympicTestCase(APITestCase):
 
     # Test fetching a olympic by id
     def test_olympics_get_by_id(self):
-        # Get sport with id 2
+        # Get olympic with id 2
         response = self.client.get("/api/olympics/1/")
         response_data = response.data
         
@@ -365,7 +365,7 @@ class OlympicTestCase(APITestCase):
         self.assertEquals(olympic["season"], "S")
         self.assertEquals(olympic["city"], "City A")
 
-        # Get sport with id 2
+        # Get olympic with id 2
         response = self.client.get("/api/olympics/2/")
         response_data = response.data
 
@@ -449,3 +449,143 @@ class OlympicTestCase(APITestCase):
         self.assertEquals(olympics[0].year, 2020)
         self.assertEquals(olympics[0].city, "City B")
         self.assertEquals(olympics[0].id, 2)
+
+class TeamTestCase(APITestCase):
+    
+    def setUp(self):
+        team = Team.objects.create(noc = "ABC", name = "Name 1")
+        team.save()
+
+        team_2 = Team.objects.create(noc = "DEF", name = "Name 2")
+        team_2.save()
+
+        self.base_body = {
+            "noc": "GHI",
+            "name": "Name 3"
+        }
+
+    # Test get all elements in list
+    def test_teams_list_all(self):
+        response = self.client.get("/api/teams/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        team = response_data[0]
+        team_2 = response_data[1]
+
+        self.assertEquals(team["id"], 1)
+        self.assertEquals(team["noc"], "ABC")
+        self.assertEquals(team["name"], "Name 1")
+
+        self.assertEquals(team_2["id"], 2)
+        self.assertEquals(team_2["noc"], "DEF")
+        self.assertEquals(team_2["name"], "Name 2")
+
+    # Test get a empty list
+    def test_team_list_empty(self):
+        Team.objects.all().delete()
+        response = self.client.get("/api/teams/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 0)
+
+    # Test fetching a team by id
+    def test_team_get_by_id(self):
+        # Get team with id 2
+        response = self.client.get("/api/teams/1/")
+        response_data = response.data
+        
+        team = response_data
+
+        self.assertEquals(team["id"], 1)
+        self.assertEquals(team["noc"], "ABC")
+        self.assertEquals(team["name"], "Name 1")
+
+        # Get team with id 2
+        response = self.client.get("/api/teams/2/")
+        response_data = response.data
+
+        team_2 = response_data
+
+        self.assertEquals(team_2["id"], 2)
+        self.assertEquals(team_2["noc"], "DEF")
+        self.assertEquals(team_2["name"], "Name 2")
+
+    # Test creating a new team
+    def test_create_new_team(self):
+        request = self.client.post("/api/teams/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(request.data['id'], 3)
+
+        team = Team.objects.get(id=3)
+
+        self.assertEquals(team.noc, "GHI")
+        self.assertEquals(team.name, "Name 3")
+
+    # Test creating a new team with nov with less than 3 characters
+    def test_create_new_team_invalid_noc_less_than_3(self):
+        base_body = self.base_body
+        base_body["noc"] = "NO"
+        request = self.client.post("/api/teams/", base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(request.data["noc"][0], "Ensure this field has at least 3 characters.")
+
+    # Test creating a new team with nov with more than 3 characters
+    def test_create_new_team_invalid_noc_more_than_3(self):
+        base_body = self.base_body
+        base_body["noc"] = "NOCS"
+        request = self.client.post("/api/teams/", base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(request.data["noc"][0], "Ensure this field has no more than 3 characters.")
+
+    # Test update a team using a PUT request
+    def test_update_team_put(self):
+        team = Team.objects.get(id=1)
+        self.assertEquals(team.noc, "ABC")
+        self.assertEquals(team.name, "Name 1")
+
+        request = self.client.put("/api/teams/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        team = Team.objects.get(id=1)
+
+        self.assertEquals(team.noc, "GHI")
+        self.assertEquals(team.name, "Name 3")
+
+    # Test update a team using a PATCH request
+    def test_update_team_patch(self):
+        team = Team.objects.get(id=1)
+        self.assertEquals(team.noc, "ABC")
+        self.assertEquals(team.name, "Name 1")
+
+        request = self.client.put("/api/teams/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        team = Team.objects.get(id=1)
+
+        self.assertEquals(team.noc, "GHI")
+        self.assertEquals(team.name, "Name 3")
+
+    # Test delete a team
+    def test_delete_olympic(self):
+        teams = Team.objects.all()
+
+        self.assertEquals(len(teams), 2)
+
+        request = self.client.delete("/api/teams/1/")
+
+        self.assertEquals(request.status_code, status.HTTP_204_NO_CONTENT)
+
+        teams = Team.objects.all()
+
+        self.assertEquals(len(teams), 1)
+
+        self.assertEquals(teams[0].name, "Name 2")
+        self.assertEquals(teams[0].noc, "DEF")
+        self.assertEquals(teams[0].id, 2)
