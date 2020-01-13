@@ -5,6 +5,11 @@ SEASONS = [
     ("W", "Winter")
 ]
 
+SEX = [
+    ("M", "Male"),
+    ("F", "Female")
+]
+
 class Sport(models.Model):
     name = models.CharField(blank=False, max_length=100, null=False, unique=True)
 
@@ -24,3 +29,11 @@ class Olympic(models.Model):
 class Team(models.Model):
     noc = models.CharField(blank=False, max_length=3, null=False, unique=True)
     name = models.CharField(blank=False, max_length=100, null=False)
+
+class Athlete(models.Model):
+    name = models.CharField(blank=False, max_length=200, null=False)
+    age = models.PositiveSmallIntegerField()
+    height = models.PositiveSmallIntegerField()
+    weight = models.PositiveSmallIntegerField()
+    sex = models.CharField(blank=False, max_length=1, choices=SEX, null=False)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
