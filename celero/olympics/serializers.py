@@ -27,10 +27,10 @@ class OlympicSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     noc = serializers.CharField(max_length=3, min_length=3)
-    
+    notes =serializers.CharField(required=False, default=None, initial=None)
     class Meta:
         model = Team
-        fields = ["id", "noc", "name"]
+        fields = ["id", "noc", "name", "notes"]
 
 class AthleteSerializer(serializers.ModelSerializer):
     sex = serializers.ChoiceField(choices = {
@@ -40,7 +40,7 @@ class AthleteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Athlete
-        fields = ["id", "name", "age", "height", "weight", "sex", "team"]
+        fields = ["id", "name", "sex", "team"]
 
 class OlympicEventSerializer(serializers.ModelSerializer):
     medal = serializers.ChoiceField(choices= {
@@ -51,4 +51,4 @@ class OlympicEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OlympicEvent
-        fields = ["id", "medal", "event", "olympic", "athlete"]
+        fields = ["id", "medal", "event", "olympic", "athlete", "age", "height", "weight"]
