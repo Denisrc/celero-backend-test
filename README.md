@@ -19,9 +19,6 @@ Using pip
 $ pip install -r requirements.txt
 ```
 
-
-Download the [data](https://www.kaggle.com/heesoo37/120-years-of-olympic-history-athletes-and-results#athlete_events.csv) and put in the data folder
-
 Migrate the databse
 
 ```sh
@@ -427,6 +424,9 @@ celero$ ./manage.py test
 | weight  | Positive Integer |
 
 **\*Medal can have one of these values: Gold, Silver or Bronze**
+
+## Missing part
+-   Deploy to a server
 
 ## Future Changes
 -   Improve Test
