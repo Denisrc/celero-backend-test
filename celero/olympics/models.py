@@ -35,7 +35,7 @@ class Olympic(models.Model):
 class Team(models.Model):
     noc = models.CharField(blank=False, max_length=3, null=False, unique=True)
     name = models.CharField(blank=False, max_length=100, null=False)
-    notes = models.CharField(max_length=100, default=None)
+    notes = models.CharField(max_length=100, default=None, null=True)
 
 class Athlete(models.Model):
     name = models.CharField(blank=False, max_length=200, null=False)

@@ -599,17 +599,14 @@ class AthleteTestCase(APITestCase):
         team_2 = Team.objects.create(noc = "DEF", name = "Name 2")
         team_2.save()
 
-        athlete = Athlete.objects.create(name="Athlete 1", age=20, height=70, weight=180, sex="M", team=team)
+        athlete = Athlete.objects.create(name="Athlete 1", sex="M", team=team)
         athlete.save()
 
-        athlete_2 = Athlete.objects.create(name="Athlete 2", age=25, height=68, weight=170, sex="F", team=team_2)
+        athlete_2 = Athlete.objects.create(name="Athlete 2", sex="F", team=team_2)
         athlete_2.save()
 
         self.base_body = {
             "name": "Name",
-            "age": 30,
-            "height": 75,
-            "weight": 175,
             "sex": "Male",
             "team": 1
         }
@@ -626,17 +623,11 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athlete["id"], 1)
         self.assertEquals(athlete["name"], "Athlete 1")
-        self.assertEquals(athlete["age"], 20)
-        self.assertEquals(athlete["height"], 70)
-        self.assertEquals(athlete["weight"], 180)
         self.assertEquals(athlete["sex"], "M")
         self.assertEquals(athlete["team"], 1)
 
         self.assertEquals(athlete_2["id"], 2)
         self.assertEquals(athlete_2["name"], "Athlete 2")
-        self.assertEquals(athlete_2["age"], 25)
-        self.assertEquals(athlete_2["height"], 68)
-        self.assertEquals(athlete_2["weight"], 170)
         self.assertEquals(athlete_2["sex"], "F")
         self.assertEquals(athlete_2["team"], 2)
 
@@ -658,9 +649,6 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athlete["id"], 1)
         self.assertEquals(athlete["name"], "Athlete 1")
-        self.assertEquals(athlete["age"], 20)
-        self.assertEquals(athlete["height"], 70)
-        self.assertEquals(athlete["weight"], 180)
         self.assertEquals(athlete["sex"], "M")
         self.assertEquals(athlete["team"], 1)
 
@@ -672,9 +660,6 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athlete_2["id"], 2)
         self.assertEquals(athlete_2["name"], "Athlete 2")
-        self.assertEquals(athlete_2["age"], 25)
-        self.assertEquals(athlete_2["height"], 68)
-        self.assertEquals(athlete_2["weight"], 170)
         self.assertEquals(athlete_2["sex"], "F")
         self.assertEquals(athlete_2["team"], 2)
 
@@ -688,9 +673,6 @@ class AthleteTestCase(APITestCase):
         athlete = Athlete.objects.get(id=3)
 
         self.assertEquals(athlete.name, "Name")
-        self.assertEquals(athlete.age, 30)
-        self.assertEquals(athlete.height, 75)
-        self.assertEquals(athlete.weight, 175)
         self.assertEquals(athlete.sex, "Male")
         self.assertEquals(athlete.team.id, 1)
 
@@ -700,9 +682,6 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athlete.id, 1)
         self.assertEquals(athlete.name, "Athlete 1")
-        self.assertEquals(athlete.age, 20)
-        self.assertEquals(athlete.height, 70)
-        self.assertEquals(athlete.weight, 180)
         self.assertEquals(athlete.sex, "M")
         self.assertEquals(athlete.team.id, 1)
 
@@ -713,9 +692,6 @@ class AthleteTestCase(APITestCase):
         athlete = Athlete.objects.get(id=1)
 
         self.assertEquals(athlete.name, "Name")
-        self.assertEquals(athlete.age, 30)
-        self.assertEquals(athlete.height, 75)
-        self.assertEquals(athlete.weight, 175)
         self.assertEquals(athlete.sex, "Male")
         self.assertEquals(athlete.team.id, 1)
 
@@ -725,9 +701,6 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athlete.id, 1)
         self.assertEquals(athlete.name, "Athlete 1")
-        self.assertEquals(athlete.age, 20)
-        self.assertEquals(athlete.height, 70)
-        self.assertEquals(athlete.weight, 180)
         self.assertEquals(athlete.sex, "M")
         self.assertEquals(athlete.team.id, 1)
 
@@ -738,9 +711,6 @@ class AthleteTestCase(APITestCase):
         athlete = Athlete.objects.get(id=1)
 
         self.assertEquals(athlete.name, "Name")
-        self.assertEquals(athlete.age, 30)
-        self.assertEquals(athlete.height, 75)
-        self.assertEquals(athlete.weight, 175)
         self.assertEquals(athlete.sex, "Male")
         self.assertEquals(athlete.team.id, 1)
 
@@ -760,9 +730,6 @@ class AthleteTestCase(APITestCase):
 
         self.assertEquals(athletes[0].id, 2)
         self.assertEquals(athletes[0].name, "Athlete 2")
-        self.assertEquals(athletes[0].age, 25)
-        self.assertEquals(athletes[0].height, 68)
-        self.assertEquals(athletes[0].weight, 170)
         self.assertEquals(athletes[0].sex, "F")
         self.assertEquals(athletes[0].team.id, 2)
 
@@ -793,22 +760,25 @@ class OlympicEventTestCase(APITestCase):
         olympic_2 = Olympic.objects.create(year = 2020, season = 'W', city = "City B")
         olympic_2.save()
 
-        athlete = Athlete.objects.create(name="Athlete 1", age=20, height=70, weight=180, sex="M", team=team)
+        athlete = Athlete.objects.create(name="Athlete 1", sex="M", team=team)
         athlete.save()
 
-        athlete_2 = Athlete.objects.create(name="Athlete 2", age=25, height=68, weight=170, sex="F", team=team_2)
+        athlete_2 = Athlete.objects.create(name="Athlete 2", sex="F", team=team_2)
         athlete_2.save()
 
-        olympic_event = OlympicEvent.objects.create(event=event, olympic=olympic, athlete=athlete, medal=None)
+        olympic_event = OlympicEvent.objects.create(event=event, age=20, height=70, weight=180, olympic=olympic, athlete=athlete, medal=None)
         olympic_event.save()
 
-        olympic_event_2 = OlympicEvent.objects.create(event=event_2, olympic=olympic_2, athlete=athlete_2, medal="S")
+        olympic_event_2 = OlympicEvent.objects.create(event=event_2, age=25, height=68, weight=170, olympic=olympic_2, athlete=athlete_2, medal="S")
         olympic_event_2.save()
 
         self.base_body = {
             "event": 1,
             "olympic": 2,
             "athlete": 1,
+            "age": 30,
+            "height": 75,
+            "weight": 175,
             "medal": "Gold"
         }
 
@@ -825,12 +795,18 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event["id"], 1)
         self.assertEquals(olympic_event["medal"], None)
         self.assertEquals(olympic_event["event"], 1)
+        self.assertEquals(olympic_event["age"], 20)
+        self.assertEquals(olympic_event["height"], 70)
+        self.assertEquals(olympic_event["weight"], 180)
         self.assertEquals(olympic_event["olympic"], 1)
 
         self.assertEquals(olympic_event_2["id"], 2)
         self.assertEquals(olympic_event_2["medal"], "S")
         self.assertEquals(olympic_event_2["event"], 2)
         self.assertEquals(olympic_event_2["olympic"], 2)
+        self.assertEquals(olympic_event_2["age"], 25)
+        self.assertEquals(olympic_event_2["height"], 68)
+        self.assertEquals(olympic_event_2["weight"], 170)
 
     # Test get a empty list
     def test_team_list_empty(self):
@@ -852,6 +828,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event["medal"], None)
         self.assertEquals(olympic_event["event"], 1)
         self.assertEquals(olympic_event["olympic"], 1)
+        self.assertEquals(olympic_event["height"], 70)
+        self.assertEquals(olympic_event["weight"], 180)
+        self.assertEquals(olympic_event["age"], 20)
 
         # Get team with id 2
         response = self.client.get("/api/olympicEvents/2/")
@@ -863,6 +842,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event_2["medal"], "S")
         self.assertEquals(olympic_event_2["event"], 2)
         self.assertEquals(olympic_event_2["olympic"], 2)
+        self.assertEquals(olympic_event_2["height"], 68)
+        self.assertEquals(olympic_event_2["weight"], 170)
+        self.assertEquals(olympic_event_2["age"], 25)
 
     # Test creating a new team
     def test_create_new_team(self):
@@ -877,6 +859,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event.event.id, 1)
         self.assertEquals(olympic_event.olympic.id, 2)
         self.assertEquals(olympic_event.athlete.id, 1)
+        self.assertEquals(olympic_event.age, 30)
+        self.assertEquals(olympic_event.weight, 175)
+        self.assertEquals(olympic_event.height, 75)
 
     # Test update a team using a PUT request
     def test_update_team_put(self):
@@ -886,6 +871,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event.event.id, 1)
         self.assertEquals(olympic_event.athlete.id, 1)
         self.assertEquals(olympic_event.olympic.id, 1)
+        self.assertEquals(olympic_event.age, 20)
+        self.assertEquals(olympic_event.weight, 180)
+        self.assertEquals(olympic_event.height, 70)
 
         request = self.client.put("/api/olympicEvents/1/", self.base_body, format = "json")
 
@@ -897,6 +885,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event.event.id, 1)
         self.assertEquals(olympic_event.athlete.id, 1)
         self.assertEquals(olympic_event.olympic.id, 2)
+        self.assertEquals(olympic_event.age, 30)
+        self.assertEquals(olympic_event.weight, 175)
+        self.assertEquals(olympic_event.height, 75)
 
     # Test update a team using a PATCH request
     def test_update_team_patch(self):        
@@ -906,6 +897,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event.event.id, 1)
         self.assertEquals(olympic_event.athlete.id, 1)
         self.assertEquals(olympic_event.olympic.id, 1)
+        self.assertEquals(olympic_event.age, 20)
+        self.assertEquals(olympic_event.weight, 180)
+        self.assertEquals(olympic_event.height, 70)
 
         request = self.client.put("/api/olympicEvents/1/", self.base_body, format = "json")
 
@@ -917,6 +911,9 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event.event.id, 1)
         self.assertEquals(olympic_event.athlete.id, 1)
         self.assertEquals(olympic_event.olympic.id, 2)
+        self.assertEquals(olympic_event.age, 30)
+        self.assertEquals(olympic_event.weight, 175)
+        self.assertEquals(olympic_event.height, 75)
 
     # Test delete a team
     def test_delete_olympic(self):
@@ -936,3 +933,6 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event[0].medal, "S")
         self.assertEquals(olympic_event[0].event.id, 2)
         self.assertEquals(olympic_event[0].olympic.id, 2)
+        self.assertEquals(olympic_event[0].age, 25)
+        self.assertEquals(olympic_event[0].weight, 170)
+        self.assertEquals(olympic_event[0].height, 68)
