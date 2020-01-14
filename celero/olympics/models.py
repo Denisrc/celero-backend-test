@@ -38,6 +38,7 @@ class Team(models.Model):
     notes = models.CharField(max_length=100, default=None, null=True)
 
 class Athlete(models.Model):
+    id = models.IntegerField(primary_key=True, editable=True, unique=True)
     name = models.CharField(blank=False, max_length=200, null=False)
     sex = models.CharField(blank=False, max_length=1, choices=SEX, null=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
@@ -47,6 +48,6 @@ class OlympicEvent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     olympic = models.ForeignKey(Olympic, on_delete=models.CASCADE)
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
-    age = models.PositiveSmallIntegerField(default=None)
-    height = models.PositiveSmallIntegerField(default=None)
-    weight = models.PositiveSmallIntegerField(default=None)
+    age = models.PositiveSmallIntegerField(default=None, null=True)
+    height = models.PositiveSmallIntegerField(default=None, null=True)
+    weight = models.PositiveSmallIntegerField(default=None, null=True)
