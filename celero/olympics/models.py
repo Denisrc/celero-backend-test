@@ -15,6 +15,7 @@ MEDALS = [
     ("S", "Silver"),
     ("B", "Bronze")
 ]
+
 class Sport(models.Model):
     name = models.CharField(blank=False, max_length=100, null=False, unique=True)
 
@@ -34,12 +35,10 @@ class Olympic(models.Model):
 class Team(models.Model):
     noc = models.CharField(blank=False, max_length=3, null=False, unique=True)
     name = models.CharField(blank=False, max_length=100, null=False)
+    notes = models.CharField(max_length=100, default=None)
 
 class Athlete(models.Model):
     name = models.CharField(blank=False, max_length=200, null=False)
-    age = models.PositiveSmallIntegerField()
-    height = models.PositiveSmallIntegerField()
-    weight = models.PositiveSmallIntegerField()
     sex = models.CharField(blank=False, max_length=1, choices=SEX, null=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
@@ -48,3 +47,6 @@ class OlympicEvent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     olympic = models.ForeignKey(Olympic, on_delete=models.CASCADE)
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
+    age = models.PositiveSmallIntegerField(default=None)
+    height = models.PositiveSmallIntegerField(default=None)
+    weight = models.PositiveSmallIntegerField(default=None)
