@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from olympics.models import Sport, Event, Olympic, Team, Athlete
+from olympics.models import Sport, Event, Olympic, Team, Athlete, OlympicEvent
 
 class SportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +41,14 @@ class AthleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Athlete
         fields = ["id", "name", "age", "height", "weight", "sex", "team"]
+
+class OlympicEventSerializer(serializers.ModelSerializer):
+    medal = serializers.ChoiceField(choices= {
+        "Gold": "G",
+        "Silver": "S",
+        "Bronze": "B"
+    }, required=False, default=None, initial=None)
+
+    class Meta:
+        model = OlympicEvent
+        fields = ["id", "medal", "event", "olympic", "athlete"]

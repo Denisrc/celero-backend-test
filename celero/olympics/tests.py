@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
-from olympics.models import Sport, Event, Olympic, Team, Athlete
+from olympics.models import Sport, Event, Olympic, Team, Athlete, OlympicEvent
 
 class SportTestCase(APITestCase):
     
@@ -765,3 +765,174 @@ class AthleteTestCase(APITestCase):
         self.assertEquals(athletes[0].weight, 170)
         self.assertEquals(athletes[0].sex, "F")
         self.assertEquals(athletes[0].team.id, 2)
+
+class OlympicEventTestCase(APITestCase):
+    
+    def setUp(self):
+        sport = Sport.objects.create(name = "Sport 1")
+        sport.save()
+
+        sport_2 = Sport.objects.create(name = "Sport 2")
+        sport_2.save()
+        
+        event = Event.objects.create(name = "Event 1", sport = sport)
+        event.save()
+
+        event_2 = Event.objects.create(name = "Event 2", sport = sport_2)
+        event_2.save()
+
+        team = Team.objects.create(noc = "ABC", name = "Name 1")
+        team.save()
+
+        team_2 = Team.objects.create(noc = "DEF", name = "Name 2")
+        team_2.save()
+
+        olympic = Olympic.objects.create(year = 2020, season = 'S', city = "City A")
+        olympic.save()
+
+        olympic_2 = Olympic.objects.create(year = 2020, season = 'W', city = "City B")
+        olympic_2.save()
+
+        athlete = Athlete.objects.create(name="Athlete 1", age=20, height=70, weight=180, sex="M", team=team)
+        athlete.save()
+
+        athlete_2 = Athlete.objects.create(name="Athlete 2", age=25, height=68, weight=170, sex="F", team=team_2)
+        athlete_2.save()
+
+        olympic_event = OlympicEvent.objects.create(event=event, olympic=olympic, athlete=athlete, medal=None)
+        olympic_event.save()
+
+        olympic_event_2 = OlympicEvent.objects.create(event=event_2, olympic=olympic_2, athlete=athlete_2, medal="S")
+        olympic_event_2.save()
+
+        self.base_body = {
+            "event": 1,
+            "olympic": 2,
+            "athlete": 1,
+            "medal": "Gold"
+        }
+
+    # Test get all elements in list
+    def test_teams_list_all(self):
+        response = self.client.get("/api/olympicEvents/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        olympic_event = response_data[0]
+        olympic_event_2 = response_data[1]
+
+        self.assertEquals(olympic_event["id"], 1)
+        self.assertEquals(olympic_event["medal"], None)
+        self.assertEquals(olympic_event["event"], 1)
+        self.assertEquals(olympic_event["olympic"], 1)
+
+        self.assertEquals(olympic_event_2["id"], 2)
+        self.assertEquals(olympic_event_2["medal"], "S")
+        self.assertEquals(olympic_event_2["event"], 2)
+        self.assertEquals(olympic_event_2["olympic"], 2)
+
+    # Test get a empty list
+    def test_team_list_empty(self):
+        OlympicEvent.objects.all().delete()
+        response = self.client.get("/api/olympicEvents/")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 0)
+
+    # Test fetching a team by id
+    def test_team_get_by_id(self):
+        # Get team with id 2
+        response = self.client.get("/api/olympicEvents/1/")
+        response_data = response.data
+        
+        olympic_event = response_data
+
+        self.assertEquals(olympic_event["id"], 1)
+        self.assertEquals(olympic_event["medal"], None)
+        self.assertEquals(olympic_event["event"], 1)
+        self.assertEquals(olympic_event["olympic"], 1)
+
+        # Get team with id 2
+        response = self.client.get("/api/olympicEvents/2/")
+        response_data = response.data
+
+        olympic_event_2 = response_data
+
+        self.assertEquals(olympic_event_2["id"], 2)
+        self.assertEquals(olympic_event_2["medal"], "S")
+        self.assertEquals(olympic_event_2["event"], 2)
+        self.assertEquals(olympic_event_2["olympic"], 2)
+
+    # Test creating a new team
+    def test_create_new_team(self):
+        request = self.client.post("/api/olympicEvents/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(request.data['id'], 3)
+
+        olympic_event = OlympicEvent.objects.get(id=3)
+
+        self.assertEquals(olympic_event.medal, "Gold")
+        self.assertEquals(olympic_event.event.id, 1)
+        self.assertEquals(olympic_event.olympic.id, 2)
+        self.assertEquals(olympic_event.athlete.id, 1)
+
+    # Test update a team using a PUT request
+    def test_update_team_put(self):
+        olympic_event = OlympicEvent.objects.get(id=1)
+
+        self.assertEquals(olympic_event.id, 1)
+        self.assertEquals(olympic_event.event.id, 1)
+        self.assertEquals(olympic_event.athlete.id, 1)
+        self.assertEquals(olympic_event.olympic.id, 1)
+
+        request = self.client.put("/api/olympicEvents/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        olympic_event = OlympicEvent.objects.get(id=1)
+
+        self.assertEquals(olympic_event.id, 1)
+        self.assertEquals(olympic_event.event.id, 1)
+        self.assertEquals(olympic_event.athlete.id, 1)
+        self.assertEquals(olympic_event.olympic.id, 2)
+
+    # Test update a team using a PATCH request
+    def test_update_team_patch(self):        
+        olympic_event = OlympicEvent.objects.get(id=1)
+        
+        self.assertEquals(olympic_event.id, 1)
+        self.assertEquals(olympic_event.event.id, 1)
+        self.assertEquals(olympic_event.athlete.id, 1)
+        self.assertEquals(olympic_event.olympic.id, 1)
+
+        request = self.client.put("/api/olympicEvents/1/", self.base_body, format = "json")
+
+        self.assertEquals(request.status_code, status.HTTP_200_OK)
+
+        olympic_event = OlympicEvent.objects.get(id=1)
+
+        self.assertEquals(olympic_event.id, 1)
+        self.assertEquals(olympic_event.event.id, 1)
+        self.assertEquals(olympic_event.athlete.id, 1)
+        self.assertEquals(olympic_event.olympic.id, 2)
+
+    # Test delete a team
+    def test_delete_olympic(self):
+        olympic_event = OlympicEvent.objects.all()
+
+        self.assertEquals(len(olympic_event), 2)
+
+        request = self.client.delete("/api/olympicEvents/1/")
+
+        self.assertEquals(request.status_code, status.HTTP_204_NO_CONTENT)
+
+        olympic_event = OlympicEvent.objects.all()
+
+        self.assertEquals(len(olympic_event), 1)
+
+        self.assertEquals(olympic_event[0].id, 2)
+        self.assertEquals(olympic_event[0].medal, "S")
+        self.assertEquals(olympic_event[0].event.id, 2)
+        self.assertEquals(olympic_event[0].olympic.id, 2)
