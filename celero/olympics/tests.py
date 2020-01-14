@@ -35,6 +35,13 @@ class SportTestCase(APITestCase):
         self.assertEquals(sport_2["id"], 2)
         self.assertEquals(sport_2["name"], "Sport 2")
 
+    # Test list sports with filter in name
+    def test_sports_list_filter(self):
+        response = self.client.get("/api/sports/?name=Sport 1")
+        response_data = response.data
+        
+        self.assertEquals(len(response_data), 1)
+
     # Test get a empty list
     def test_sports_list_empty(self):
         Sport.objects.all().delete()
@@ -149,15 +156,36 @@ class EventTestCase(APITestCase):
 
         self.assertEquals(len(response_data), 3)
 
-
         self.assertEquals(response_data[0]["id"], 1)
         self.assertEquals(response_data[0]["name"], "Event 1.0")
         self.assertEquals(response_data[0]["sport"], 1)
         
-
         self.assertEquals(response_data[1]["id"], 2)
         self.assertEquals(response_data[1]["name"], "Event 2")
         self.assertEquals(response_data[1]["sport"], 2)
+
+    # Test list of events with filter in name and sport
+    def test_events_list_filters(self):
+        response = self.client.get("/api/events/?name=Event 1")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        response = self.client.get("/api/events/?sport=1")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
+        response = self.client.get("/api/events/?sport=2")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/events/?sport=1&name=Event 1.0")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 1)
+
 
     # Test get a empty list
     def test_events_list_empty(self):
@@ -315,7 +343,7 @@ class OlympicTestCase(APITestCase):
         olympic = Olympic.objects.create(year = 2020, season = 'S', city = "City A")
         olympic.save()
 
-        olympic_2 = Olympic.objects.create(year = 2020, season = 'W', city = "City B")
+        olympic_2 = Olympic.objects.create(year = 2021, season = 'W', city = "City B")
         olympic_2.save()
 
         self.base_body = {
@@ -340,9 +368,41 @@ class OlympicTestCase(APITestCase):
         self.assertEquals(olympic["city"], "City A")
 
         self.assertEquals(olympic_2["id"], 2)
-        self.assertEquals(olympic_2["year"], 2020)
+        self.assertEquals(olympic_2["year"], 2021)
         self.assertEquals(olympic_2["season"], "W")
         self.assertEquals(olympic_2["city"], "City B")
+
+    # Test list of olympics with filter in year, city and season
+    def test_events_list_filters(self):
+        response = self.client.get("/api/olympics/?year=2020")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympics/?city=City A")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympics/?season=Summer")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympics/?season=Winter")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympics/?year=2021")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
 
     # Test get a empty list
     def test_sports_list_empty(self):
@@ -372,7 +432,7 @@ class OlympicTestCase(APITestCase):
         olympic_2 = response_data
 
         self.assertEquals(olympic_2["id"], 2)
-        self.assertEquals(olympic_2["year"], 2020)
+        self.assertEquals(olympic_2["year"], 2021)
         self.assertEquals(olympic_2["season"], "W")
         self.assertEquals(olympic_2["city"], "City B")
 
@@ -446,7 +506,7 @@ class OlympicTestCase(APITestCase):
 
         self.assertEquals(len(olympics), 1)
 
-        self.assertEquals(olympics[0].year, 2020)
+        self.assertEquals(olympics[0].year, 2021)
         self.assertEquals(olympics[0].city, "City B")
         self.assertEquals(olympics[0].id, 2)
 
@@ -481,6 +541,38 @@ class TeamTestCase(APITestCase):
         self.assertEquals(team_2["id"], 2)
         self.assertEquals(team_2["noc"], "DEF")
         self.assertEquals(team_2["name"], "Name 2")
+
+    # Test list of teams with filter in noc, name and notes
+    def test_teams_list_filters(self):
+        response = self.client.get("/api/teams/?noc=ABC")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/teams/?name=Name 1")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/teams/?noc=DEF")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/teams/?name=Name 2")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/teams/?name=Name")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
+
 
     # Test get a empty list
     def test_team_list_empty(self):
@@ -630,6 +722,49 @@ class AthleteTestCase(APITestCase):
         self.assertEquals(athlete_2["name"], "Athlete 2")
         self.assertEquals(athlete_2["sex"], "F")
         self.assertEquals(athlete_2["team"], 2)
+
+    # Test list of athletes with filter in name, sex, team
+    def test_athletes_list_filters(self):
+        response = self.client.get("/api/athletes/?sex=Male")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?name=Athlete 1")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?team=1")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?sex=Female")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?name=Athlete 2")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?team=2")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/athletes/?name=Athlete")
+        response_data = response.data
+
+        self.assertEquals(len(response_data), 2)
 
     # Test get a empty list
     def test_team_list_empty(self):
@@ -807,6 +942,46 @@ class OlympicEventTestCase(APITestCase):
         self.assertEquals(olympic_event_2["age"], 25)
         self.assertEquals(olympic_event_2["height"], 68)
         self.assertEquals(olympic_event_2["weight"], 170)
+
+
+    # Test list of athletes with filter in name, sex, team
+    def test_athletes_list_filters(self):
+        response = self.client.get("/api/olympicEvents/?event=1")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympicEvents/?olympic=1")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympicEvents/?age=20")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympicEvents/?height=70")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympicEvents/?weight=180")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 1)
+        self.assertEquals(len(response_data), 1)
+
+        response = self.client.get("/api/olympicEvents/?medal=Silver")
+        response_data = response.data
+
+        self.assertEquals(response_data[0]["id"], 2)
+        self.assertEquals(len(response_data), 1)
+
 
     # Test get a empty list
     def test_team_list_empty(self):
